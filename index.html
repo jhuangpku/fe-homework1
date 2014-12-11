@@ -1,0 +1,26 @@
+<DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="index.css" />
+</head>
+
+<body>
+    <ol id="myTab">
+        <li data-tab-item="panel1" onclick="myTab.setActiveIndex(0)">one</li>
+        <li data-tab-item="panel2" onclick="myTab.setActiveIndex(1)">two</li>
+        <li data-tab-item="panel3" onclick="myTab.setActiveIndex(2)">three</li>
+    </ol>
+    <div id="panel1" style="display: none;" class="tabItem">Panel 1</div>
+    <div id="panel2" style="display: none;" class="tabItem">Panel 2</div>
+    <div id="panel3" style="display: none;" class="tabItem">Panel 3</div>
+
+    <script src="Tab.js"></script>
+    <script>
+    var myTab = new Tab({
+        main: document.getElementById('myTab'),
+        activeIndex: 1
+    });
+    </script>
+</body>
+</html>
