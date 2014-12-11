@@ -12,6 +12,7 @@
     float: left;
     font-family: Consolas, "Microsoft YaHei", sans-serif;
     color: white; 
+    cursor: pointer;
 }
 
 .tabItem{
