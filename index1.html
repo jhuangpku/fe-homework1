@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" href="index1.css" />
+</head>
+
+<body>
+<!--
+<div class="tmp">
+<div class="mainLayer">mainLayer</div>
+<div class="mainLayerArrow"></div>
+</div>
+<div class="selectLayerSelect">
+<div class="selectLayerItem">item1</div>
+<div class="selectLayerItem">item2</div>
+</div>
+-->
+
+<h2 id="info"></h2>
+<div id="sex-select"></div>
+<div id="career-select"></div>
+
+<select id="rel">
+    <option value="1">男</option>
+    <option value="0">女</option>
+</select>
+<script src="select.js"></script>
+<script>
+var sexOptions = [ 
+    {text: 'male', value: 1}, 
+    {text: 'female', value: 0} 
+];
+
+var careerOptions = [ 
+    {text: 'ue', value: 1},
+    {text: 'fe', value: 2},
+    {text: 'rd', value: 3},
+    {text: 'qa', value: 4},
+    {text: 'op', value: 5},
+    {text: 'pm', value: 6} 
+];
+var sexSelect = new Select( sexOptions, document.getElementById('sex-select') );
+var careerSelect = new Select( careerOptions, document.getElementById('career-select') );
+
+sexSelect.render();
+careerSelect.render();
+
+sexSelect.onchange = careerSelect.onchange = function () {
+    console.log("change")
+    document.getElementById('info').innerHTML = sexSelect.getValue() + ',' + careerSelect.getValue();
+};
+
+document.getElementById('rel').onchange = function () {
+    sexSelect.setValue(this.value);
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+body {
+    font-family: Consolas, "Microsoft YaHei", sans-serif;
+}
+
+.mainLayerBox {
+    height: 25px;
+    width: 100px;   
+}
+
+
+.mainLayer {
+    float: left;
+    height: 20px;
+    width: 80px;
+    font-size: 12px;
+    line-height: 21px;
+    cursor: pointer;
+}
+.mainLayerSelect {
+
+}
+.mainLayerArrow {
+    float: right;
+    font-size: 1px;
+    height: 20px;
+    width: 16px;
+    cursor: pointer;
+    background: #000;
+}
+.mainLayerArrowSelect {
+
+}
+.selectLayer {
+    display: none;
+    cursor: pointer;
+    width: 100px;
+    position: absolute;
+    /*overflow: hidden;*/
+}
+.selectLayerSelect {
+    display: block;
+    cursor: pointer;
+    background: white;
+}
+.selectLayerItem {
+    cursor: pointer;
+    /*overflow: hidden;*/
+
+}
+.selectLayerItemSelect {
+    cursor: pointer;
+    background: #c2c2c2;
+}
