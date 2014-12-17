@@ -7,6 +7,12 @@ function Select(options, main) {
     if (!this.main){
         return
     }
+    //todo1: html语言的生成应该放到render中，这里只做一些入口参数的判断
+    //原因是，有可能外层在调用这个初始化函数以后，会对传入的参数做修改
+    //比如
+    //mySelector = Select(options, ...)
+    //mySelector.options = ...
+    //todo2: html的引号使用的是双引号，所以js的字符串使用单引号
     var htmlArray = [ "<div class=mainLayerBox>", 
                      "<div id='", main.id, "-mainLayer'>请选择</div>",
                      "<div id='", main.id, "-mainLayerArrow'></div>",
@@ -42,6 +48,12 @@ Select.prototype.onchange = function () {};
 
 Select.prototype.render = function () {
     // 实现Select组件的渲染
+    // todo1：这里用了this.main.id，但是在控件Select的设定中，第二个参数是一个dom对象
+    // 它并不一定具有id，所以一般js会在初始化的时候，自己给绑上一个内部id, 该id用于唯一识别
+    // 控件
+    // todo2: dom对象的操作性能消耗大，因此尽量避免dom的操作，这里需要把所有设定classname
+    // 和value的改成字符串的拼接操作，最后一次性的添加的dom对象中，对字符串的操作会比较难懂
+    // 因此自己可以写一个模板来实现
     var mainLayer = document.getElementById(this.main.id + '-mainLayer')
     mainLayer.className = this.cssClasses.mainLayerCss
     
@@ -61,6 +73,8 @@ Select.prototype.render = function () {
         item.onclick = function() {
             me.selectItem(this.getAttribute('value') - 0);
         }
+        //todo: onmouseover和onmouseout可以利用css和hover来实现
+        //这样就不需要再绑定两个事件了
         item.onmouseover = function(){
             me.mouseOnItem(this.getAttribute('value') - 0);
         } 
@@ -148,6 +162,10 @@ Select.prototype.mouseOutItem = function(activeItemValue){
 
 
 Select.prototype.setValue = function (value) {
+    //todo：控件的设计逻辑为value才是真正的机器可识别id，包括往后端传参数，而text是对外显示给用户的，
+    //所以，value应该作为内部对象存储下来，setvalue和getvalue直接改变value的值就可以
+    //显示的时候，通过value到text的一个字典（初始化的时候给定）来获得其text
+    
     // 实现setValue方法，使JS能够更改Select当前选中的值
     var mainLayer = document.getElementById(this.main.id + '-mainLayer')
     var selectLayer = document.getElementById(this.main.id + '-selectLayer')
