@@ -1,3 +1,15 @@
+var cnt = 13546
+function generate_id(){
+    return cnt++
+}
+
+function str_format(){
+    format = arguments[0]
+    args = Array.prototype.slice.call(arguments, 1)
+    return format.replace(/\\?\$\{([^{}]+)\}/g, function(match, i){
+        return args[i++]
+    })
+}
 
 function Select(options, main) {
     // 实现Select组件的构造函数
@@ -7,13 +19,20 @@ function Select(options, main) {
     if (!this.main){
         return
     }
+    this.id = generate_id()
+    this.select_value = this.options[0].value
+    this.value2text = {}
+    for (var i = 0, l = this.options.length; i < l; i++)
+    {
+        this.value2text[this.options[i].value] = this.options[i].text
+    }
     //todo1: html语言的生成应该放到render中，这里只做一些入口参数的判断
     //原因是，有可能外层在调用这个初始化函数以后，会对传入的参数做修改
     //比如
     //mySelector = Select(options, ...)
     //mySelector.options = ...
     //todo2: html的引号使用的是双引号，所以js的字符串使用单引号
-    var htmlArray = [ "<div class=mainLayerBox>", 
+    /*var htmlArray = [ "<div class=mainLayerBox>", 
                      "<div id='", main.id, "-mainLayer'>请选择</div>",
                      "<div id='", main.id, "-mainLayerArrow'></div>",
                      "</div>",
@@ -26,6 +45,7 @@ function Select(options, main) {
     }
     htmlArray.push("</div>")
     this.main.innerHTML += htmlArray.join("") 
+    */
 }
 // mainLayer有两种css样式，unselect，select
 //selectLayer也有两种css样式，selectLayer的每个item也有两种css样式
@@ -54,36 +74,42 @@ Select.prototype.render = function () {
     // todo2: dom对象的操作性能消耗大，因此尽量避免dom的操作，这里需要把所有设定classname
     // 和value的改成字符串的拼接操作，最后一次性的添加的dom对象中，对字符串的操作会比较难懂
     // 因此自己可以写一个模板来实现
-    var mainLayer = document.getElementById(this.main.id + '-mainLayer')
-    mainLayer.className = this.cssClasses.mainLayerCss
+    //
+    var htmlArray = []
+    mainTPL =  '<div id="${0}" class="${1}">${2}'
+    selectTPL = '<div id="${0}" class="${1}" value="${2}">${3}</div>'
+    htmlArray.push('<div class=mainLayerBox>')
+    htmlArray.push(str_format(mainTPL, this.id + '-mainLayer', 'mainLayer', '请选择'))
+    htmlArray.push('</div>')
+    htmlArray.push(str_format(mainTPL, this.id + '-mainLayerArrow', 'mainLayerArrow', ' '))
+    htmlArray.push('</div>')
+    htmlArray.push('</div>')
+    htmlArray.push(str_format(mainTPL, this.id + '-selectLayer', 'selectLayer', ' '))
+    console.log(htmlArray)
+    for (var i in this.value2text)
+    {
+        var value = i
+        var text = this.value2text[value]
+        htmlArray.push(str_format(selectTPL, this.id + '-selectLayerItem' + value, 'selectLayerItem', value, text))
+    }
+    htmlArray.push('</div>')
+    this.main.innerHTML = htmlArray.join("")
     
-    var mainLayerArrow = document.getElementById(this.main.id + '-mainLayerArrow')
-    mainLayerArrow.className = this.cssClasses.mainLayerArrowCss
-    
-    var selectLayer = document.getElementById(this.main.id + '-selectLayer')
+    //绑定selectLayer对象
+    var selectLayer = document.getElementById(this.id + '-selectLayer')
     selectLayer.className = this.cssClasses.selectLayerCss
-
     var selectItems = selectLayer.getElementsByTagName('div')
+    var me = this
     for (var i = 0, l = selectItems.length; i < l; i++)
     {
         var item = selectItems[i]
-        item.className = this.cssClasses.selectLayerItemCss
-        item.setAttribute('value', this.options[i].value)
-        var me = this;
         item.onclick = function() {
             me.selectItem(this.getAttribute('value') - 0);
         }
-        //todo: onmouseover和onmouseout可以利用css和hover来实现
-        //这样就不需要再绑定两个事件了
-        item.onmouseover = function(){
-            me.mouseOnItem(this.getAttribute('value') - 0);
-        } 
-        item.onmouseout = function(){
-            me.mouseOutItem(this.getAttribute('value') - 0);
-        }
     }
-
-    var me = this;
+    
+    //绑定mainLayerArrow对象的事件
+    var mainLayerArrow = document.getElementById(this.id + '-mainLayerArrow')
     mainLayerArrow.onclick = function () {
         me.mainClick = 1;
         me.clickArrow();
@@ -103,20 +129,21 @@ Select.prototype.render = function () {
     }, false);
 };
 //Arrow被点击，arrow的class会有变化，selectlayer的class也有变化
+
 Select.prototype.clickArrow = function(){
     //console.log(this)
-    var mainLayerArrow = document.getElementById(this.main.id + '-mainLayerArrow')
+    var mainLayerArrow = document.getElementById(this.id + '-mainLayerArrow')
     mainLayerArrow.className = [this.cssClasses.mainLayerArrowCss,
                 this.cssClasses.mainLayerArrowSelectCss].join(" ")
     
-    var selectLayer = document.getElementById(this.main.id + '-selectLayer')
+    var selectLayer = document.getElementById(this.id + '-selectLayer')
     selectLayer.className = [this.cssClasses.selectLayerCss,
                 this.cssClasses.selectLayerSelectCss].join(" ")
 };
 //item被点击，selectLayer的class有变化，mainLayer的class也有变化
 Select.prototype.selectItem = function(activeItemValue){
-    var mainLayer = document.getElementById(this.main.id + '-mainLayer')
-    var selectLayer = document.getElementById(this.main.id + '-selectLayer')
+    var mainLayer = document.getElementById(this.id + '-mainLayer')
+    var selectLayer = document.getElementById(this.id + '-selectLayer')
     var selectItems = selectLayer.getElementsByTagName('div')
     for(var i = 0, l = selectItems.length; i < l; i++)
     {
@@ -128,38 +155,20 @@ Select.prototype.selectItem = function(activeItemValue){
     }
     selectLayer.className = this.cssClasses.selectLayerCss
     mainLayer.className = this.cssClasses.mainLayerCss
+    this.select_value = activeItemValue
+    this.fire('change', {
+        value: activeItemValue
+    });
+};
 
-    this.onchange();
+Select.prototype.fire = function (eventName, eventArgs) {
+    var listener = this['on' + eventName];
+    if (typeof listener === 'function') {
+        listener.call(this, eventArgs);
+    }
 };
 
 //item被鼠标移动，对应的item的class需要发生变化
-Select.prototype.mouseOnItem = function(activeItemValue){
-    var selectLayer = document.getElementById(this.main.id + '-selectLayer')
-    var selectItems = selectLayer.getElementsByTagName('div')
-    for(var i = 0, l = selectItems.length; i < l; i++)
-    {
-        var item = selectItems[i]
-        if (item.getAttribute('value') - 0 == activeItemValue)
-        {
-            item.className = [this.cssClasses.selectLayerItemCss,
-                this.cssClasses.selectLayerItemSelectCss].join(" ")
-        }
-    }
-}
-
-Select.prototype.mouseOutItem = function(activeItemValue){
-    var selectLayer = document.getElementById(this.main.id + '-selectLayer')
-    var selectItems = selectLayer.getElementsByTagName('div')
-    for(var i = 0, l = selectItems.length; i < l; i++)
-    {
-        var item = selectItems[i]
-        if (item.getAttribute('value') - 0 == activeItemValue)
-        {
-            item.className = this.cssClasses.selectLayerItemCss
-        }
-    }
-}
-
 
 Select.prototype.setValue = function (value) {
     //todo：控件的设计逻辑为value才是真正的机器可识别id，包括往后端传参数，而text是对外显示给用户的，
@@ -167,25 +176,16 @@ Select.prototype.setValue = function (value) {
     //显示的时候，通过value到text的一个字典（初始化的时候给定）来获得其text
     
     // 实现setValue方法，使JS能够更改Select当前选中的值
-    var mainLayer = document.getElementById(this.main.id + '-mainLayer')
-    var selectLayer = document.getElementById(this.main.id + '-selectLayer')
-    var selectItems = selectLayer.getElementsByTagName('div')
-    for(var i = 0, l = selectItems.length; i < l; i++)
-    {
-        var item = selectItems[i]
-        if (item.getAttribute('value') - 0 == value)
-        {
-            mainLayer.innerHTML = item.innerHTML
-        }
-    }
-    
+    console.log(value)
+    this.selectItem(value);
 };
 
 Select.prototype.getValue = function () {
-    // 实现setValue方法，使JS能够获取Select当前选中的值
-    var mainLayer = document.getElementById(this.main.id + '-mainLayer')
-    //console.log(mainLayer.innerHTML)
-    return mainLayer.innerHTML
+    return this.select_value;
+};
+
+Select.prototype.getText = function () {
+    return this.value2text[this.select_value];
 };
 
 
